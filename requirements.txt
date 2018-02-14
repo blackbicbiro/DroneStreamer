@@ -1,0 +1,9 @@
+#hardware#
+raspberry pi 3
+
+#OS#
+raspbian squeeze lite
+
+
+#application#
+python3
