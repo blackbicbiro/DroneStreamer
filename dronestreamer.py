@@ -31,20 +31,6 @@ API_Url = 'https://jsonplaceholder.typicode.com/todos'
 
 
 
-#Exit player and application
-def exit_streamer(player):
-	try:
-		player.quit()
-		sys.exit()
-	except:
-		sys.exit("Exited OMXplayer and closing application")
-
-
-def signal_handler(signal, frame):
-	print("\nprogram exiting gracefully")
-	sys.exit(0)
-
-
 
 
 #Get default gateway from /proc/net/route
@@ -109,6 +95,24 @@ def Api_Object_Count(data):
 	
 	return count
 
+def check_selected_feed(feedList):
+
+	streamSelected = 1
+#	switch = 2	#detect buton input
+
+	noOfCameras = len(feedList)
+	if streamSelected > noOfCameras-1:
+		streamSelected = 0
+		return streamSelected
+	else:
+		return streamSelected
+
+#   if switch > noOfCameras-1:
+#		switch = noOfCameras-1
+#	stream = feedList[0]['Stream']
+#	return switch
+
+
 
 
 
@@ -116,28 +120,63 @@ def Api_Object_Count(data):
 def main():
 
 	while True:
-
-		defaultGW = get_default_gateway()
-		ApiData = fetch_Camera_API('jsonplaceholder.typicode.com/posts')   #test api url
-		
+		#LCD Print connecting
+		defaultGW = get_default_gateway() #dGW is also api server
+		#ApiData= fetch_Camera_API('api.myjson.com/bins/l6j55') #http://myjson.com/l6j55 jason emulator
+		ApiData = fetch_Camera_API('api.myjson.com/bins/m0k5t') #http://myjson.com/l6j55 jason emulator
 		#print(ApiData)
 		
 		if ApiData == None:
-			print("no api data")
+			print("no api data, check connection and API again")
 			#start again
 		else:
 			print("got API data, assign camera URLs")
 			CamCount = Api_Object_Count(ApiData)	##count number of camears
-			
 			CamInfo={}	#diconatry
-		for x in range(CamCount):		#get Cam Name and Stream
-			CamInfo[x] = {}
-			CamInfo[x]['Name'] = ApiData[x]['id']
-			CamInfo[x]['Stream'] = ApiData[x]['title']
-			
-			print(CamInfo[x]['Name'])
-			print(CamInfo[x]['Stream'])
+			CamInfo.clear()
+			#fetch API Infomation
+			for x in range(CamCount):		#get Cam Name and Stream
+				CamInfo[x] = {}
+				CamInfo[x]['Name'] = ApiData[x]['camera_name']
+				CamInfo[x]['Stream'] = ApiData[x]['rtsp_link']
+				print(CamInfo[x]['Name'])
+				print(CamInfo[x]['Stream'])
+			break
 
+
+
+	selected_Stream = check_selected_feed(CamInfo)
+	player1 = OMXPlayer(CamInfo[selected_Stream]['Stream'], args=['--live','-b', '--no-osd', '--threshold','0'])
+
+
+	while True:
+		try:
+			if player1.playback_status() == Playing:
+				selected_Stream = check_selected_feed(CamInfo)
+				if selected_Stream != player1.get_source():
+					player1.load(CamInfo[selected_Stream]['Stream'])
+
+
+		except:
+			print("not playing")
+			##check connection and start again
+
+
+#check selected stream
+#start player
+#check player is playing - if not check connection check api start again
+#check switch - is the selected stream same as whats playing - yes do nothing - no stop and start
+
+
+
+
+
+
+		player1.stop()
+		break
+
+		
+		
 
 			#print(ApiData[x]['id'])
 			
@@ -150,33 +189,9 @@ def main():
 #			print(ApiData[0]['userId'])
 
 
+			#kill while loop while testing
 
 
-
-		break	#kill while loop while testing
-
-
-	#print(ApiData.status_code)
-	#print(ApiData.text)
-
-
-	#player1 = OMXPlayer (Stream_Url, args=['--live','-b', '--no-osd', '--threshold','0'])
-	#print(player1.is_playing())
-	#print(player1.identity())
-	#sleep(2)
-	#player1.quit()
-
-
-	#PrintLCD"Waiting for connection"
-	#get_defult_gateway():
-	#PrintLCD "IP Address = xxx.xxx.xxx.xxx"
-
-	#player2 = OMXPlayer(Stream_Url, dbus_name='org.mpris.MediaPlayer2.omxplayer1	')
-
-	#print(player2.identity())
-	#player1.stopEvent = print("hello")
-	#sleep(2)
-	#player2.quit()
 
 
 
@@ -185,31 +200,3 @@ if __name__ == "__main__":	#main program loop
 	main()
 
 
-
-
-
-
-
-
-#notes and work in progress
-#	while Te:
-#		try:
-#			player1.get_source()
-#		except:
-#			print("broken")
-#		signal.signal(signal.SIGINT, signal_handler, player1)
-
-
-		#check if player is running
-			#no = check gateway, fetch api, map api to switch, check switch postion, update LCD
-			#yes = check switch hasnt changed
-		#default_GW = get_default_gateway_linux()
-		#print(default_GW)
-		#API_info = fetch_API_cameras(API_Url)
-		#print(API_info)
-		#GWaddr = get_default_gateway_linux()
-		#print(GWaddr)
-		#player1 = startPlayer(Stream_Url)
-		#print player1)
-		#print (player1.get_source())	#print current playing stream
-		#print (player1.is_playing())	#check if player i

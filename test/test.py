@@ -94,6 +94,23 @@ def Api_Object_Count(data):
 	
 	return count
 
+def check_selected_feed(feedList):
+
+	streamSelected = 1
+#	switch = 2	#detect buton input
+
+	noOfCameras = len(feedList)
+	if streamSelected > noOfCameras-1:
+		streamSelected = 0
+		return streamSelected
+	else:
+		return streamSelected
+
+#   if switch > noOfCameras-1:
+#		switch = noOfCameras-1
+#	stream = feedList[0]['Stream']
+#	return switch
+
 
 
 
@@ -101,10 +118,9 @@ def Api_Object_Count(data):
 def main():
 
 	while True:
-
-		defaultGW = get_default_gateway()
-		#ApiData = fetch_Camera_API('jsonplaceholder.typicode.com/posts')   #test api url
-		ApiData= fetch_Camera_API('api.myjson.com/bins/l6j55') #http://myjson.com/l6j55 jason emulator
+		defaultGW = get_default_gateway() #dGW is also api server
+		#ApiData= fetch_Camera_API('api.myjson.com/bins/l6j55') #http://myjson.com/l6j55 jason emulator
+		ApiData = fetch_Camera_API('api.myjson.com/bins/m0k5t') #http://myjson.com/l6j55 jason emulator
 		#print(ApiData)
 		
 		if ApiData == None:
@@ -122,9 +138,15 @@ def main():
 				CamInfo[x]['Stream'] = ApiData[x]['rtsp_link']
 				print(CamInfo[x]['Name'])
 				print(CamInfo[x]['Stream'])
+			break
+	
+	while True:
+
+		selected_Stream = check_selected_feed(CamInfo)
+		print(("stream seleteced"),selected_Stream)
 
 
-
+		break
 
 			#print(ApiData[x]['id'])
 			
@@ -137,7 +159,9 @@ def main():
 #			print(ApiData[0]['userId'])
 
 
-		break	#kill while loop while testing
+			#kill while loop while testing
+
+
 
 
 
