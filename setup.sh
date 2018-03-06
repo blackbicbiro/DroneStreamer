@@ -2,6 +2,21 @@
 
 CONFIG_FILE="/boot/config.txt"
 KERNAL_FILE="/boot/cmdline.txt"
+RC_LOCAL="/etc/rc.local"
+
+
+#install packages
+#apt-get update -y
+#apt-get install python3-rpi.gpio -y
+#apt-get install fbi -y
+#apt-get install python3-pip -y
+#apt-get install omxplayer -y
+#apt-get update && sudo apt-get install -y libdbus-1{,-dev} -y
+#sudo pip3 install requests
+#sudo pip3 install omxplayer-wrapper
+
+
+
 
 #setup ssh
 if service ssh status | grep -q running;
@@ -61,12 +76,32 @@ else
 fi
 
 
+#Disable pi logo blanking
+if grep -q "logo.nologo" $KERNAL_FILE; then
+	echo "logo.nologo already in file"
+else
+	echo "added logo.nologo to" $KERNAL_FILE
+	sed -i 's/$/ logo.nologo/' $KERNAL_FILE
+fi
 
-#install packages
-apt-get update -y
-apt-get install python3-rpi.gpio -y
-apt-get install python3-pip -y
-apt-get install omxplayer -y
-apt-get update && sudo apt-get install -y libdbus-1{,-dev} -y
-pip3 install requests
-pip3 install omxplayer-wrapper
+#Disable pi boot color test
+if grep -q "disable_splash=" $CONFIG_FILE; then
+	echo "disable_splash=1 already in file"
+	sed -E -i 's/disable_splash=[0-9]+/disable_splash=1/' $CONFIG_FILE
+else
+	echo "added disable_splash=1 to" $CONFIG_FILE
+	sed -i 's/$/ disable_splash=1/' $CONFIG_FILE
+fi
+
+
+
+
+#Auto start script on boot
+
+if grep -q "/usr/bin/python3 /home/pi/DronerStreamer/dronestreamer.py" $RC_LOCAL; then
+	echo "script already in rc.local file"
+else
+	echo "added player script to" $RC_LOCAL
+	sed -i '$i \/usr/bin/python3 /home/pi/DronerStreamer/dronestreamer.py \n' /etc/rc.local
+fi
+

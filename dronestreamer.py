@@ -18,6 +18,9 @@ GPIO.setup(5, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 userSelectedStream = 0
 
 
+os.system("sudo fbi -T 1 --noverbose /home/pi/DronerStreamer/docs/splash.png")
+
+sleep(2)
 
 #TODO
 #selectbutton press
@@ -94,7 +97,7 @@ def Stream_Selection_button(feedList):
 def main():
 #	os.system("pkill omxplayer") #make sure OMXplayer isnt running
 	global userSelectedStream
-	GPIO.add_event_detect(5, GPIO.RISING, bouncetime=200)	#set up button detechtion with debounce
+	GPIO.add_event_detect(5, GPIO.RISING, bouncetime=500)	#set up button detechtion with debounce
 
 	while True:	##main loop
 		while True:
@@ -152,7 +155,7 @@ def main():
 			#print("stream selected before increment:", userSelectedStream)
 			#userSelectedStream = userSelectedStream + 1
 			print("stream selection number: ",userSelectedStream)
-			sleep(1)
+			sleep(.1)
 
 
 
