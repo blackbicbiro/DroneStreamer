@@ -64,6 +64,7 @@ fi
 
 #install packages
 apt-get update -y
+apt-get install python3-rpi.gpio -y
 apt-get install python3-pip -y
 apt-get install omxplayer -y
 apt-get update && sudo apt-get install -y libdbus-1{,-dev} -y

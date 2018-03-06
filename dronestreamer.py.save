@@ -10,15 +10,6 @@ from omxplayer.player import OMXPlayer
 from pathlib import Path
 from time import sleep
 
-import RPi.GPIO as GPIO
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(5, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-
-userSelectedStream = 0
-
-
-
 #TODO
 #selectbutton press
 #LCD display
@@ -78,30 +69,35 @@ def fetch_Camera_API(IPaddr):
 
 
 
+def check_selected_feed(feedList):
+	streamSelected = 0	#TO DO#detect what been selected
+#	switch = 2	#detect buton input
+	#noOfCameras = len(feedList)
+	#if streamSelected > noOfCameras-1:
+	#	streamSelected = 0
+	#	return streamSelected
+	#else:
+	return streamSelected
 
-def Stream_Selection_button(feedList):
-	#streamSelected = 0		#temp untill button code works
-	global userSelectedStream
-	noOfCameras = len(feedList)
-	if userSelectedStream > noOfCameras-1:
-		userSelectedStream = 0
-		return userSelectedStream
-	else:
-		return userSelectedStream
+#   if switch > noOfCameras-1:
+#		switch = noOfCameras-1
+#	stream = feedList[0]['Stream']
+#	return switch
+
+
+
 
 
 ########################### MAIN ######################################
 def main():
 #	os.system("pkill omxplayer") #make sure OMXplayer isnt running
-	global userSelectedStream
-	GPIO.add_event_detect(5, GPIO.RISING, bouncetime=200)	#set up button detechtion with debounce
-
+	selected_Stream = 0			 #default stream selected for soft button
 	while True:	##main loop
 		while True:
 			#LCD Print connecting
 			defaultGW = get_default_gateway() #dGW is also api server
 			ApiData = fetch_Camera_API('api.myjson.com/bins/m0k5t') #http://myjson.com/l6j55 jason emulator
-
+			
 			if ApiData == None:
 				print("No API data, check connection and API again")
 			else:
@@ -117,28 +113,26 @@ def main():
 					print(CamInfo[x]['Name'], "-", CamInfo[x]['Stream'])
 				break
 
-		Stream_Selection_button(CamInfo)   ##check selected camera number is real
+
+		selected_Stream = check_selected_feed(CamInfo)	#check stream selected
 		try:
-			player1 = OMXPlayer(CamInfo[userSelectedStream]['Stream'], args=['--live','-b', '--no-osd', '--threshold','0'])
+			player1 = OMXPlayer(CamInfo[selected_Stream]['Stream'], args=['--live','-b', '--no-osd', '--threshold','0'])
 		except:
 			print("Player failed to start")
-		print("started player:",CamInfo[userSelectedStream]['Name'],"-",CamInfo[userSelectedStream]['Stream'])
-
+		print("started player:",CamInfo[selected_Stream]['Name'],"-",CamInfo[selected_Stream]['Stream'])
 
 
 		while True:
 			try:
 				if player1.playback_status() == "Playing":
-					print("players stream",player1.get_source())
-					Stream_Selection_button(CamInfo)
 					print("got here")
-					print(CamInfo[userSelectedStream])
-					if GPIO.event_detected(5):		##check button has been pressed
-   						print('Button pressed')
-   						userSelectedStream = userSelectedStream + 1
-					if CamInfo[userSelectedStream]['Stream'] != player1.get_source(): # check to see if the selected stream is the same that is plaing
-						print("i am here")
-						player1.load(CamInfo[userSelectedStream]['Stream'])
+					print("got here2")
+					
+#selected_Stream = check_selected_feed(CamInfo)
+					#print("selected stream", selected_stream)
+					print("players stream",player1.get_source())
+					#if selected_Stream != player1.get_source():
+					#	player1.load(CamInfo[selected_Stream]['Stream'])
 						#update LCD
 			except:
 				print("player stopped / Video disconnected / stream unavaliable")
@@ -148,11 +142,13 @@ def main():
 				except:
 					break
 				#check connection and start again
-			#for testing purpses
-			#print("stream selected before increment:", userSelectedStream)
-			#userSelectedStream = userSelectedStream + 1
-			print("stream selection number: ",userSelectedStream)
-			sleep(1)
+	sleep(0.1)
+
+
+
+
+
+
 
 
 
