@@ -18,7 +18,7 @@ GPIO.setup(5, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 userSelectedStream = 0
 
 
-os.system("sudo fbi -T 1 --noverbose /home/pi/DronerStreamer/docs/splash.png")
+os.system("sudo fbi -T 1 --noverbose /home/pi/DronerStreamer/splash.png")
 
 sleep(2)
 
