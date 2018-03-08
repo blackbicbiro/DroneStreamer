@@ -14,9 +14,9 @@ import RPi.GPIO as GPIO
 import Adafruit_CharLCD as LCD
 
 
-GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BCM)     #use GPIO numbers
 
-# Raspberry Pi pin configuration:
+# Raspberry Pi pin configuration: GPIO numbers
 ButtonPin=27
 lcd_rs        = 26  # Note this might need to be changed to 21 for older revision Pi's.
 lcd_en        = 19
@@ -24,7 +24,7 @@ lcd_d4        = 13
 lcd_d5        = 6
 lcd_d6        = 5
 lcd_d7        = 11
-lcd_backlight = 4
+lcd_backlight = 4		##needs connecting to this pin if i want to control LCD  backlight
 
 GPIO.setup(ButtonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
