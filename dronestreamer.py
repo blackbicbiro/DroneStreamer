@@ -12,7 +12,8 @@ from time import sleep
 
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(5, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+ButtonPin=27
+GPIO.setup(ButtonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 
 userSelectedStream = 0
@@ -97,7 +98,7 @@ def Stream_Selection_button(feedList):
 def main():
 #	os.system("pkill omxplayer") #make sure OMXplayer isnt running
 	global userSelectedStream
-	GPIO.add_event_detect(5, GPIO.RISING, bouncetime=500)	#set up button detechtion with debounce
+	GPIO.add_event_detect(ButtonPin, GPIO.RISING, bouncetime=500)	#set up button detechtion with debounce
 
 	while True:	##main loop
 		while True:
@@ -136,7 +137,7 @@ def main():
 					Stream_Selection_button(CamInfo)
 					print("got here")
 					print(CamInfo[userSelectedStream])
-					if GPIO.event_detected(5):		##check button has been pressed
+					if GPIO.event_detected(ButtonPin):		##check button has been pressed
    						print('Button pressed')
    						userSelectedStream = userSelectedStream + 1
 					if CamInfo[userSelectedStream]['Stream'] != player1.get_source(): # check to see if the selected stream is the same that is plaing
