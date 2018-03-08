@@ -12,10 +12,9 @@ RC_LOCAL="/etc/rc.local"
 #apt-get install python3-pip -y
 #apt-get install omxplayer -y
 #apt-get update && sudo apt-get install -y libdbus-1{,-dev} -y
-#pip3 install requests
-#pip3 install omxplayer-wrapper
-#pip3 install adafruit-charlcd
-
+#sudo pip3 install requests
+#sudo pip3 install omxplayer-wrapper
+#sudo pip3 install Adafruit_CharLCD
 
 
 #setup ssh
