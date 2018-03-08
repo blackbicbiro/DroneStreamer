@@ -125,19 +125,19 @@ def main():
 
 	while True:	##main loop
 		while True:
-			#LCD Print connecting
+
 			defaultGW = get_default_gateway() #dGW is also api server
 			ApiData = fetch_Camera_API('api.myjson.com/bins/m0k5t') #http://myjson.com/l6j55 jason emulator
 
 			if ApiData == None:
 				print("No API data, check connection and API again")
 			else:
-				CamCount = len(ApiData) #count number of camera objects in json file
-				print("Camera Count: ",CamCount)	##count number of camears
-				CamInfo={}	#diconatry
+				CamCount = len(ApiData) 		#count number of camera objects in json file
+				print("Camera Count: ",CamCount)	#count number of camears
+				CamInfo={}
 				CamInfo.clear()
 				#fetch API Infomation
-				for x in range(CamCount):		#get Cam Name and Stream
+				for x in range(CamCount):		#get Cam Name, Stream and Drone Named
 					CamInfo[x] = {}
 					CamInfo[x]['Name'] = ApiData[x]['camera_name']
 					CamInfo[x]['Stream'] = ApiData[x]['rtsp_link']
@@ -159,22 +159,25 @@ def main():
 		while True:
 			try:
 				if player1.playback_status() == "Playing":
-					print("players stream",player1.get_source())
+					print("playing stream: ",player1.get_source())
 					Stream_Selection_button(CamInfo)
-					print("got here")
 					print(CamInfo[userSelectedStream])
-					if GPIO.event_detected(ButtonPin):		##check button has been pressed
-   						print('Button pressed')
-   						userSelectedStream = userSelectedStream + 1
-					if CamInfo[userSelectedStream]['Stream'] != player1.get_source(): # check to see if the selected stream is the same that is plaing
-						print("i am here")
+					if GPIO.event_detected(ButtonPin):					#check button has been pressed
+						print('Button pressed')
+						userSelectedStream = userSelectedStream + 1			#increment selected stream
+						Stream_Selection_button(CamInfo) 				#check userSelect value will work
+
+					if CamInfo[userSelectedStream]['Stream'] != player1.get_source(): 	# check to see if the selected stream is the same that is plaing
 						player1.load(CamInfo[userSelectedStream]['Stream'])
-						lcd.clear()
+						lcd.clear()							#print message to LCD
 						lcd.message("Streaming\n")
 						lcd.message(CamInfo[userSelectedStream]['Name'])
 
 			except:
 				print("player stopped / Video disconnected / stream unavaliable")
+				lcd.clear()
+				lcd.message("  Disconnected  \n")
+				lcd.message(" Player Stopped ")
 				try:
 					player1.quit()
 					break
