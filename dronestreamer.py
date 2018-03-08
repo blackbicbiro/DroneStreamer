@@ -11,9 +11,30 @@ from pathlib import Path
 from time import sleep
 
 import RPi.GPIO as GPIO
+import Adafruit_CharLCD as LCD
+
+
 GPIO.setmode(GPIO.BCM)
+
+# Raspberry Pi pin configuration:
 ButtonPin=27
+lcd_rs        = 26  # Note this might need to be changed to 21 for older revision Pi's.
+lcd_en        = 19
+lcd_d4        = 13
+lcd_d5        = 6
+lcd_d6        = 5
+lcd_d7        = 11
+lcd_backlight = 4
+
 GPIO.setup(ButtonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+# Define LCD column and row size for 16x2 LCD.
+lcd_columns = 16
+lcd_rows    = 2
+
+# Initialize the LCD using the pins above.
+lcd = LCD.Adafruit_CharLCD(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7,
+                           lcd_columns, lcd_rows, lcd_backlight)
 
 
 userSelectedStream = 0
@@ -36,6 +57,8 @@ API_Url = 'https://jsonplaceholder.typicode.com/todos'
 #Get default gateway from /proc/net/route
 def get_default_gateway():
 	GW = None
+	lcd.clear()
+	lcd.message('   CONNECTING   ')
 	while GW == None:
 		GW = os.popen("ip route | grep default | awk {'print$3'}").read()
 		GW = GW.rstrip()
@@ -118,7 +141,8 @@ def main():
 					CamInfo[x] = {}
 					CamInfo[x]['Name'] = ApiData[x]['camera_name']
 					CamInfo[x]['Stream'] = ApiData[x]['rtsp_link']
-					print(CamInfo[x]['Name'], "-", CamInfo[x]['Stream'])
+					CamInfo[x]['Flyer'] = ApiData[x]['flyer_name']
+					print(CamInfo[x]['Name'], "-", CamInfo[x]['Stream'], "-", CamInfo[x]['Flyer'])
 				break
 
 		Stream_Selection_button(CamInfo)   ##check selected camera number is real
@@ -127,7 +151,9 @@ def main():
 		except:
 			print("Player failed to start")
 		print("started player:",CamInfo[userSelectedStream]['Name'],"-",CamInfo[userSelectedStream]['Stream'])
-
+		lcd.clear()
+		lcd.message("Streaming\n")
+		lcd.message(CamInfo[userSelectedStream]['Name'])
 
 
 		while True:
@@ -143,7 +169,10 @@ def main():
 					if CamInfo[userSelectedStream]['Stream'] != player1.get_source(): # check to see if the selected stream is the same that is plaing
 						print("i am here")
 						player1.load(CamInfo[userSelectedStream]['Stream'])
-						#update LCD
+						lcd.clear()
+						lcd.message("Streaming\n")
+						lcd.message(CamInfo[userSelectedStream]['Name'])
+
 			except:
 				print("player stopped / Video disconnected / stream unavaliable")
 				try:
