@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
-#import time
 import os
 import sys
-#import socket, struct
-#import signal
 import requests
 import json
+import RPi.GPIO as GPIO
+import Adafruit_CharLCD as LCD
 from omxplayer.player import OMXPlayer
 from pathlib import Path
 from time import sleep
 
-import RPi.GPIO as GPIO
-import Adafruit_CharLCD as LCD
 
-droneRxIP="api.myjson.com"
-#api.myjson.com/bins/m0k5t
+droneRxIP="api.myjson.com"	#test api api.myjson.com/bins/m0k5t
+
 apiURL="/bins/m0k5t"		#test with 2 working
-#apiURL="/bins/18fa25"		#test with 1 working 1 wrong url, siulates missing camera feed
+#apiURL="/bins/18fa25"		#test with 1 working 1 wrong url, simulates missing camera feed
 
 
 GPIO.setmode(GPIO.BCM)     #use GPIO numbering
@@ -40,10 +37,18 @@ lcd = LCD.Adafruit_CharLCD(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7, lcd_c
 #define button with pull up resister
 GPIO.setup(ButtonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-
-
 #Start background Logo
 os.system("sudo fbi -T 1 --noverbose /home/pi/DronerStreamer/splash.png")  #backgroup picture
+
+
+
+
+
+
+
+
+
+
 
 
 ##########Check API Connection to Drone Fetch Json file and status code##########
@@ -79,6 +84,8 @@ def fetch_Camera_API(IPaddr, apiSyntax):
 
 
 
+
+
 ########## Validates userSelected stream number against camera list ##########
 def Stream_Selection_button(feedList,SelectedStream):
 	noOfCameras = len(feedList)
@@ -92,8 +99,11 @@ def Stream_Selection_button(feedList,SelectedStream):
 
 
 
-########## Checks for an active RTSP session for omxplayer ##########
-def do_CheckCamUrlStatus(cam,streamNo):	#check camera stream is up by checking rtsp descibe
+
+
+
+########## Checks for an active RTSP session for omxplayer looking at RTSP header ##########
+def do_CheckCamUrlStatus(cam,streamNo):	
 		#########May need to grep for the workd DESCRIBE to narrow down exit code##########
 		streamStatus = os.system("curl -m 4 -i "+cam[streamNo]['Stream'])
 		print("cURL check output:", streamStatus)
@@ -112,8 +122,8 @@ def main():
 	GPIO.add_event_detect(ButtonPin, GPIO.RISING, bouncetime=500)	#set up button detechtion with debounce
 
 	while True:	##main loop
+		#check connection and fetch API
 		while True:
-
 			ApiData = fetch_Camera_API(droneRxIP,apiURL)		#Get Camera list
 			if len(ApiData) > 0:
 				CamCount = len(ApiData) 		#count number of camera objects in json file
@@ -134,11 +144,11 @@ def main():
 		userSelectedStream = Stream_Selection_button(CamInfo,userSelectedStream)   ##check selected camera number is real
 
 
-
+		#Start player and check for button selection
 		while True:
 			if GPIO.event_detected(ButtonPin):					#check button has been pressed
 				print('Button pressed')
-				userSelectedStream = userSelectedStream + 1			#increment selected stream
+				userSelectedStream = userSelectedStream + 1			#increment selected stream by 1
 				userSelectedStream = Stream_Selection_button(CamInfo,userSelectedStream)
 
 			try:
@@ -154,7 +164,6 @@ def main():
 							break
 					else:
 						print("Currently Streaming",player1.get_source())
-
 			except:
 				if do_CheckCamUrlStatus(CamInfo, userSelectedStream) == True:
 					player1 = OMXPlayer(CamInfo[userSelectedStream]['Stream'], args=['--live','-b', '--no-osd', '--threshold','0'])
