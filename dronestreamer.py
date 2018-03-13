@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-import time
+#import time
 import os
 import sys
-import socket, struct
-import signal
+#import socket, struct
+#import signal
 import requests
 import json
 from omxplayer.player import OMXPlayer
@@ -13,6 +13,10 @@ from time import sleep
 import RPi.GPIO as GPIO
 import Adafruit_CharLCD as LCD
 
+droneRxIP="api.myjson.com"
+#api.myjson.com/bins/m0k5t
+#apiURL="/bins/m0k5t"		#test with 2 working
+apiURL="/bins/18fa25"		#test with 1 working 1 wrong url, siulates missing camera feed
 
 GPIO.setmode(GPIO.BCM)     #use GPIO numbers
 
@@ -36,98 +40,75 @@ lcd_rows    = 2
 lcd = LCD.Adafruit_CharLCD(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7,
                            lcd_columns, lcd_rows, lcd_backlight)
 
-
-userSelectedStream = 0
-
-
-os.system("sudo fbi -T 1 --noverbose /home/pi/DronerStreamer/splash.png")
+#os.system("sudo fbi -T 1 --noverbose /home/pi/DronerStreamer/splash.png")  #backgroup picture
 
 sleep(2)
 
-#TODO
-#selectbutton press
-#LCD display
 
-#STREAM_URI = 'rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov'
-Stream_Url = 'rtsp://172.25.40.240/video1'
-API_Url = 'https://jsonplaceholder.typicode.com/todos'
-
-
-
-#Get default gateway from /proc/net/route
-def get_default_gateway():
-	GW = None
+#Check API Connection to Drone Fetch Json file and status code
+def fetch_Camera_API(IPaddr, apiSyntax):
+	#URL = "http://"+IPaddr
+	URL = "http://"+IPaddr+apiSyntax	#build Api URL from IP
 	lcd.clear()
 	lcd.message('   CONNECTING   ')
-	while GW == None:
-		GW = os.popen("ip route | grep default | awk {'print$3'}").read()
-		GW = GW.rstrip()
-		if len(GW) == 0:
-			GW = None
-			sleep(1)
-	return GW
-
-
-
-#Fetch Json file and status code
-def fetch_Camera_API(IPaddr):
-	URL = "https://"+IPaddr
-	#URL = "https://"+IPaddr+"/api/getVideoStreams"	#build Api URL from IP
-	print(URL)
-	try:
-		r = requests.get(URL)
-		r.raise_for_status()
-	except requests.exceptions.HTTPError as errh:
-		print ("Http Error:",errh)
-		return None
-	except requests.exceptions.ConnectionError as errc:
-		print ("Error Connecting:",errc)
-		return None
-	except requests.exceptions.Timeout as errt:
-		print ("Timeout Error:",errt)
-		return None
-	except requests.exceptions.TooManyRedirects as errrd:
-		print ("to many Redirects:",errrd)
-		return None
-	except requests.exceptions.RequestException as err:
-		print ("OOps: Something Else",err)
-		return None
-	except:
-		print("connection fault unknown")
-		return None
-
-	if r.status_code == 200:
-		r = json.loads(r.text)	#convert json to python values
-	else:
-		r = None
+	while True:
+		print(URL)
+		try:
+			r = requests.get(URL)
+			r.raise_for_status()
+			if r.status_code == 200:
+				r = json.loads(r.text)	#convert json to python values
+				break
+		except requests.exceptions.HTTPError as errh:
+			print ("Http Error:",errh)
+		except requests.exceptions.ConnectionError as errc:
+			print ("Error Connecting:",errc)
+		except requests.exceptions.Timeout as errt:
+			print ("Timeout Error:",errt)
+		except requests.exceptions.TooManyRedirects as errrd:
+			print ("to many Redirects:",errrd)
+		except requests.exceptions.RequestException as err:
+			print ("Ops: Something Else",err)
+		except:
+			print("connection fault unknown")
+		sleep(1)
 
 	return r
 
 
 
 
-def Stream_Selection_button(feedList):
-	#streamSelected = 0		#temp untill button code works
-	global userSelectedStream
-	noOfCameras = len(feedList)
-	if userSelectedStream > noOfCameras-1:
-		userSelectedStream = 0
-		return userSelectedStream
-	else:
-		return userSelectedStream
 
+def Stream_Selection_button(feedList,SelectedStream):
+	noOfCameras = len(feedList)
+	if SelectedStream > noOfCameras-1:
+		SelectedStream = 0
+		print("user selected:", SelectedStream)
+		return SelectedStream
+	else:
+		print("user selected:", SelectedStream)
+		return SelectedStream
+
+
+def do_CheckCamUrlStatus(cam,streamNo):	#check camera stream is up by checking rtsp descibe
+		streamStatus =os.system("curl -i "+cam[streamNo]['Stream'])
+		if streamStatus == 0:
+			return True
+		else:
+			return False
 
 ########################### MAIN ######################################
 def main():
+	
 #	os.system("pkill omxplayer") #make sure OMXplayer isnt running
-	global userSelectedStream
+	userSelectedStream = 0
 	GPIO.add_event_detect(ButtonPin, GPIO.RISING, bouncetime=500)	#set up button detechtion with debounce
 
 	while True:	##main loop
 		while True:
 
-			defaultGW = get_default_gateway() #dGW is also api server
-			ApiData = fetch_Camera_API('api.myjson.com/bins/m0k5t') #http://myjson.com/l6j55 jason emulator
+
+			ApiData = fetch_Camera_API(droneRxIP,apiURL)		#Get Camera list
 
 			if ApiData == None:
 				print("No API data, check connection and API again")
@@ -145,49 +126,63 @@ def main():
 					print(CamInfo[x]['Name'], "-", CamInfo[x]['Stream'], "-", CamInfo[x]['Flyer'])
 				break
 
-		Stream_Selection_button(CamInfo)   ##check selected camera number is real
-		try:
-			player1 = OMXPlayer(CamInfo[userSelectedStream]['Stream'], args=['--live','-b', '--no-osd', '--threshold','0'])
-		except:
-			print("Player failed to start")
-		print("started player:",CamInfo[userSelectedStream]['Name'],"-",CamInfo[userSelectedStream]['Stream'])
-		lcd.clear()
-		lcd.message("Streaming\n")
-		lcd.message(CamInfo[userSelectedStream]['Name'])
+
+
+		userSelectedStream = Stream_Selection_button(CamInfo,userSelectedStream)   ##check selected camera number is real
+
 
 
 		while True:
-			try:
-				if player1.playback_status() == "Playing":
-					print("playing stream: ",player1.get_source())
-					Stream_Selection_button(CamInfo)
-					print(CamInfo[userSelectedStream])
-					if GPIO.event_detected(ButtonPin):					#check button has been pressed
-						print('Button pressed')
-						userSelectedStream = userSelectedStream + 1			#increment selected stream
-						Stream_Selection_button(CamInfo) 				#check userSelect value will work
+			if GPIO.event_detected(ButtonPin):					#check button has been pressed
+				print('Button pressed')
+				userSelectedStream = userSelectedStream + 1			#increment selected stream
+				userSelectedStream = Stream_Selection_button(CamInfo,userSelectedStream)
 
-					if CamInfo[userSelectedStream]['Stream'] != player1.get_source(): 	# check to see if the selected stream is the same that is plaing
-						player1.load(CamInfo[userSelectedStream]['Stream'])
-						lcd.clear()							#print message to LCD
-						lcd.message("Streaming\n")
-						lcd.message(CamInfo[userSelectedStream]['Name'])
+			try:
+				if player1.is_playing() == True:
+					if CamInfo[userSelectedStream]['Stream'] != player1.get_source():
+						if(do_CheckCamUrlStatus(CamInfo, userSelectedStream)) == True:
+							player1.load(CamInfo[userSelectedStream]['Stream'])
+							lcd.clear()							#print message to LCD
+							lcd.message("Streaming\n")
+							lcd.message(CamInfo[userSelectedStream]['Name'])
+						else:
+							print("stream does not exist")
+							break
+					else:
+						print("Currently Streaming",player1.get_source())
+
+
 
 			except:
-				print("player stopped / Video disconnected / stream unavaliable")
-				lcd.clear()
-				lcd.message("  Disconnected  \n")
-				lcd.message(" Player Stopped ")
-				try:
-					player1.quit()
+				if(do_CheckCamUrlStatus(CamInfo, userSelectedStream)) == True:
+					player1 = OMXPlayer(CamInfo[userSelectedStream]['Stream'], args=['--live','-b', '--no-osd', '--threshold','0'])
+					lcd.clear()							#print message to LCD
+					lcd.message("Streaming\n")
+					lcd.message(CamInfo[userSelectedStream]['Name'])
+				else:
+					print("stream does not exist")
 					break
-				except:
-					break
-				#check connection and start again
-			#for testing purpses
-			#print("stream selected before increment:", userSelectedStream)
-			#userSelectedStream = userSelectedStream + 1
-			print("stream selection number: ",userSelectedStream)
+
+
+
+
+				#lcd.clear()							#print message to LCD
+				#lcd.message("Streaming\n")
+				#lcd.message(CamInfo[userSelectedStream]['Name'])
+
+
+#			except:
+#				print("player stopped / Video disconnected / stream unavaliable")
+#				lcd.clear()
+#				lcd.message("  Disconnected  \n")
+#				lcd.message(" Player Stopped ")
+#				try:
+#					player1.quit()
+#					break
+#				except:
+#					break
+
 			sleep(.1)
 
 
