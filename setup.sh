@@ -17,6 +17,11 @@ RC_LOCAL="/etc/rc.local"
 #sudo pip3 install Adafruit_CharLCD
 
 
+#install live555 proxy
+#wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz
+#tar -xvzf live555-latest.tar.gz
+
+
 #setup ssh
 if service ssh status | grep -q running;
 then
