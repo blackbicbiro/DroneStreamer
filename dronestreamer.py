@@ -166,7 +166,7 @@ def main():
 						print("Currently Streaming",player1.get_source())
 			except:
 				if do_CheckCamUrlStatus(CamInfo, userSelectedStream) == True:
-					player1 = OMXPlayer(CamInfo[userSelectedStream]['Stream'], args=['--live','-b', '--no-osd', '--threshold','0'])
+					player1 = OMXPlayer(CamInfo[userSelectedStream]['Stream'], args=['-n','-1', '--live','-b', '--no-osd'])  #-n -1 turns of audio decode
 					lcd.clear()							#print message to LCD
 					lcd.message("Streaming\n")
 					lcd.message(CamInfo[userSelectedStream]['Name'])

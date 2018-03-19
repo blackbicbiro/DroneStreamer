@@ -1,5 +1,4 @@
 #!/bin/bash
-
 CONFIG_FILE="/boot/config.txt"
 KERNAL_FILE="/boot/cmdline.txt"
 RC_LOCAL="/etc/rc.local"
@@ -11,6 +10,7 @@ RC_LOCAL="/etc/rc.local"
 #apt-get install fbi -y
 #apt-get install python3-pip -y
 #apt-get install omxplayer -y
+#apt-get install ttf-freefont -y
 #apt-get update && sudo apt-get install -y libdbus-1{,-dev} -y
 #sudo pip3 install requests
 #sudo pip3 install omxplayer-wrapper
