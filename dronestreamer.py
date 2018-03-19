@@ -160,7 +160,15 @@ def main():
 							lcd.message("Streaming\n")
 							lcd.message(CamInfo[userSelectedStream]['Name'])
 						else:
-							print("stream does not exist123")
+							try:
+								player1.stop()
+							except:
+								pass
+							print("Stream does not exist123")
+							lcd.clear()
+							lcd.print("Stream does not\n")
+							lcd.print("exist")
+							sleep(1)
 							break
 					else:
 						print("Currently Streaming",player1.get_source())
@@ -171,7 +179,15 @@ def main():
 					lcd.message("Streaming\n")
 					lcd.message(CamInfo[userSelectedStream]['Name'])
 				else:
-					print("stream does not exist")
+					try:
+						player1.stop()
+					except:
+						pass
+					print("Stream does not exist")
+					lcd.clear()
+					lcd.message("Stream does not\n")
+					lcd.message("exist")
+					sleep(1)
 					break
 
 			sleep(.1)
