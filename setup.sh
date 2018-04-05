@@ -106,6 +106,6 @@ if grep -q "/usr/bin/python3 /home/pi/DronerStreamer/dronestreamer.py" $RC_LOCAL
 	echo "script already in rc.local file"
 else
 	echo "added player script to" $RC_LOCAL
-	sed -i '$i \/usr/bin/python3 /home/pi/DronerStreamer/dronestreamer.py \n' /etc/rc.local
+	sed -i '$i \/usr/bin/python3 /home/pi/DroneStreamer/dronestreamer.py \n' /etc/rc.local
 fi
 
