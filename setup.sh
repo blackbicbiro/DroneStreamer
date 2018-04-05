@@ -109,3 +109,10 @@ else
 	sed -i '$i \/usr/bin/python3 /home/pi/DroneStreamer/dronestreamer.py \n' /etc/rc.local
 fi
 
+#change password and hostnames
+echo "pi:metpolice" | sudo chpasswd
+sudo sed -i 's/raspberrypi/droneStreamer/g' /etc/hosts
+sudo sed -i 's/raspberrypi/droneStreamer/g' /etc/hostname
+
+
+
