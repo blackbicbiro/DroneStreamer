@@ -10,21 +10,32 @@ from pathlib import Path
 from time import sleep
 
 
-droneRxIP="api.myjson.com"	#test api api.myjson.com/bins/m0k5t
+#droneRxIP="api.myjson.com"	#test api api.myjson.com/bins/m0k5t
+droneRxIP="192.168.6.1"
+#apiURL="/bins/m0k5t"		#test with 2 working
+apiURL="/api/getVideoStreams"
 
-apiURL="/bins/m0k5t"		#test with 2 working
+
 #apiURL="/bins/18fa25"		#test with 1 working 1 wrong url, simulates missing camera feed
 
 
 GPIO.setmode(GPIO.BCM)     #use GPIO numbering
 # Raspberry Pi pin configuration: GPIO numbers
-ButtonPin		= 27
-lcd_rs        	= 26
-lcd_en        	= 19
-lcd_d4        	= 13
-lcd_d5        	= 6
-lcd_d6        	= 5
-lcd_d7        	= 11
+#readOnlyjumper = 21
+ButtonPin	= 2
+
+#lcd_rs        	= 26
+lcd_rs		= 3
+#lcd_en        	= 19
+lcd_en		= 4
+#lcd_d4        	= 13
+lcd_d4		= 17
+#lcd_d5        	= 6
+lcd_d5		= 27
+#lcd_d6        	= 5
+lcd_d6		= 22
+#lcd_d7        	= 11
+lcd_d7		= 10
 lcd_backlight 	= 4		##needs connecting to this pin if i want to control LCD  backlight
 
 # Define LCD column and row size for 16x2 LCD.
