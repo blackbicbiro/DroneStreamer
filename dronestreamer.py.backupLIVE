@@ -49,7 +49,7 @@ lcd = LCD.Adafruit_CharLCD(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7, lcd_c
 GPIO.setup(ButtonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 #Start background Logo
-os.system("sudo fbi -T 1 --noverbose /home/pi/DroneStreamer/splash.png")  #backgroup picture
+#os.system("sudo fbi -T 1 --noverbose /home/pi/DroneStreamer/splash.png")  #backgroup picture
 
 
 
@@ -73,11 +73,7 @@ def fetch_Camera_API(IPaddr, apiSyntax):
 		try:
 			r = requests.get(URL, timeout=4)
 			r.raise_for_status()
-			if len(r.text) < 20:
-				print("API to short")
-				pass
-			else:
-				r.status_code == 200
+			if r.status_code == 200:
 				r = json.loads(r.text)	#convert json to python values
 				break
 		except requests.exceptions.HTTPError as errh:
@@ -191,29 +187,10 @@ def main():
 						print("Currently Streaming",player1.get_source())
 			except:
 				if do_CheckCamUrlStatus(CamInfo, userSelectedStream) == True:
-					print("expection got here")							####fix for chogm
-					print(CamInfo[userSelectedStream]['Stream'])		####fix for chogm
-					try:
-						player1 = OMXPlayer(CamInfo[userSelectedStream]['Stream'], args=['-n','-1', '--live','-b', '--no-osd'])  #-n -1 turns of audio decode
-						print("expection got here!!!!!2")							####fix for chogm
-						lcd.clear()							#print message to LCD
-						lcd.message("Streaming\n")
-						lcd.message(CamInfo[userSelectedStream]['Name'])
-					except:
-						print("error here")
-						try:
-							player1.stop()
-						except:
-							pass
-						print("Stream does not exist")
-						lcd.clear()
-						lcd.message("Stream does not\n")
-						lcd.message("exist")
-						sleep(1)
-						break
-				
-
-
+					player1 = OMXPlayer(CamInfo[userSelectedStream]['Stream'], args=['-n','-1', '--live','-b', '--no-osd'])  #-n -1 turns of audio decode
+					lcd.clear()							#print message to LCD
+					lcd.message("Streaming\n")
+					lcd.message(CamInfo[userSelectedStream]['Name'])
 				else:
 					try:
 						player1.stop()
